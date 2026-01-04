@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 
 # -----------------------------
 # Configuración básica de la app
@@ -18,18 +19,40 @@ st.write(
 )
 
 # -----------------------------
+# Función para extraer SHA256
+# -----------------------------
+def extraer_hash(texto):
+    # Caso: URL de VirusTotal
+    if "/file/" in texto:
+        partes = texto.split("/file/")
+        posible_hash = partes[-1].split("/")[0]
+        return posible_hash
+
+    # Caso: hash directo
+    if re.fullmatch(r"[a-fA-F0-9]{64}", texto):
+        return texto
+
+    return None
+
+# -----------------------------
 # Entrada del usuario
 # -----------------------------
-hash_input = st.text_input(
-    "Ingresá el hash del archivo (SHA256):",
-    placeholder="Pegá el hash acá"
+entrada = st.text_input(
+    "Ingresá el hash o el link de VirusTotal:",
+    placeholder="Pegá el hash o la URL acá"
 )
 
 # -----------------------------
 # Botón
 # -----------------------------
 if st.button("Analizar"):
-    if hash_input:
-        st.success("Interfaz funcionando correctamente ✅")
+    hash_archivo = extraer_hash(entrada)
+
+    if hash_archivo:
+        st.success("Hash detectado correctamente ✅")
+        st.code(hash_archivo)
     else:
-        st.warning("Ingresá un hash válido.")
+        st.error(
+            "No se pudo detectar un hash válido.\n"
+            "Pegá un SHA256 o un link de VirusTotal."
+        )
